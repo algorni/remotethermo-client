@@ -5,9 +5,9 @@ using System.Text;
 
 namespace RemoteThermoClient
 {
-    public class SetHollidayBody
+    public class SetHolidayBody
     {
-        public SetHollidayBody(DateTime? holidayUntil)
+        public SetHolidayBody(DateTime? holidayUntil)
         {
             @new = holidayUntil;
 

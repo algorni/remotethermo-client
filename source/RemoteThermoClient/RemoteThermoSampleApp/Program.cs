@@ -79,6 +79,10 @@ namespace RemoteThermoSampleApp
 
             logger.LogInformation(plantSettings.ToJson());
 
+            var schedule = await remoteThermoClient.GetSchedule();
+
+            logger.LogInformation(schedule.ToJson());
+
         }
     }
 }

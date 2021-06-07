@@ -4,7 +4,7 @@ using System.Text;
 
 namespace RemoteThermoClient
 {
-    public enum OperatingModeEnum
+    public enum OperativeModeEnum
     {
         Green = 0,
         Comfort = 1,

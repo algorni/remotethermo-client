@@ -23,8 +23,6 @@ namespace RemoteThermoClient
         private string _password;
         private string _plantId;
 
-        private string _token;
-
         private LoginResponse _loginResponse = null;
 
         
@@ -32,6 +30,7 @@ namespace RemoteThermoClient
         private const string url_Login = "/api/v2/accounts/login";
         private const string url_PlantData = "/api/v2/velis/slpPlantData/";
 
+        private const string url_time = "/api/v2/remote/timeProgs/";
 
         
 
@@ -121,7 +120,6 @@ namespace RemoteThermoClient
         }
 
 
-
         public async Task<GetPlantSettringsResponse> GetPlantSettrings()
         {
             await ensureLogin();
@@ -142,6 +140,270 @@ namespace RemoteThermoClient
             {
                 _logger.LogError($"Error while retreiving Plant Settings. Http Status Code: {response.StatusCode}");
                 return null;
+            }
+        }
+
+
+        public async Task SwitchOnOff(bool status)
+        {
+            await ensureLogin();
+
+            var postSwitchStatus = _baseUrl + url_PlantData + _plantId + "/switch";
+
+            var switchOnOffContent = new StringContent(status.ToString(), Encoding.UTF8, "application/json");
+
+            var response = await httpClient.GetAsync(postSwitchStatus);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation($"Heater switched: {status}");
+            }
+            else
+            {
+                var message = $"Error while switching status. Http Status Code: {response.StatusCode}";
+
+                _logger.LogError(message);
+
+                throw new ApplicationException(message);
+            }
+        }
+
+
+        public async Task UpdatePlantMode(PlantModeEnum plantMode)
+        {
+            await ensureLogin();
+
+            var postUpdatePlantMode = _baseUrl + url_PlantData + _plantId + "/plantMode";
+
+            var jsonBody = new NewOldPayload<int>((int)plantMode, ((int)plantMode + 1)).ToJson();
+
+            var switchOnOffContent = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+
+            var response = await httpClient.GetAsync(postUpdatePlantMode);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation($"Updated Plant Mode to: {plantMode}");
+            }
+            else
+            {
+                var message = $"Error while updating Plant Mode. Http Status Code: {response.StatusCode}";
+
+                _logger.LogError(message);
+
+                throw new ApplicationException(message);
+            }
+        }
+
+
+        public async Task UpdateOperativeMode(OperativeModeEnum operativeMode)
+        {
+            await ensureLogin();
+
+            var postUpdateOperativeMode = _baseUrl + url_PlantData + _plantId + "/operativeMode";
+
+            var jsonBody = new NewOldPayload<int>((int)operativeMode, ((int)operativeMode + 1)).ToJson();
+
+            var switchOnOffContent = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+
+            var response = await httpClient.GetAsync(postUpdateOperativeMode);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation($"Updated Operative Mode to: {operativeMode}");
+            }
+            else
+            {
+                var message = $"Error while updating Operative Mode. Http Status Code: {response.StatusCode}";
+
+                _logger.LogError(message);
+
+                throw new ApplicationException(message);
+            }
+        }
+
+
+        public async Task SetBoostOnOff(bool status)
+        {
+            await ensureLogin();
+
+            var postSwitchStatus = _baseUrl + url_PlantData + _plantId + "/boost";
+
+            var switchOnOffContent = new StringContent(status.ToString(), Encoding.UTF8, "application/json");
+
+            var response = await httpClient.GetAsync(postSwitchStatus);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation($"Heater Boost switched: {status}");
+            }
+            else
+            {
+                var message = $"Error while switching Boost status. Http Status Code: {response.StatusCode}";
+
+                _logger.LogError(message);
+
+                throw new ApplicationException(message);
+            }
+        }
+
+
+        public async Task SetTemperature(double comfort, double reduced)
+        {
+            var setTemperatureUrl = _baseUrl + url_PlantData + _plantId + "/temperatures";
+
+            var setTemperatureContent = new StringContent(new SetTemperatyresBody(comfort,reduced).ToJson(), Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync(setTemperatureUrl, setTemperatureContent);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation($"Updated Temperatures: Comfort {comfort} Reduced {reduced}");
+            }
+            else
+            {
+                var message = $"Error while setting Temperatures: Comfort {comfort} Reduced {reduced}";
+
+                _logger.LogError(message);
+
+                throw new ApplicationException(message);
+            }
+        }
+
+
+        public async Task SetHolidayUntil(DateTime? holiday)
+        {
+            var setHolidayUrl = _baseUrl + url_PlantData + _plantId + "/holiday";
+
+            var setHolidayContent = new StringContent(new SetHolidayBody(holiday).ToJson(), Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync(setHolidayUrl, setHolidayContent);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation($"Updated Holiday: {holiday}");
+            }
+            else
+            {
+                var message = $"Error while updating Holiday {holiday}";
+
+                _logger.LogError(message);
+
+                throw new ApplicationException(message);
+            }
+        }
+
+
+        public async Task SetAntiLegionella(bool status)
+        {
+            var setPlantSettingsUrl = _baseUrl + url_PlantData + _plantId + "/plantSettings";
+
+            var setPlantSettingsContent = new StringContent(new SetAntiLegionellaBody(status).ToJson(), Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync(setPlantSettingsUrl, setPlantSettingsContent);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation($"Updated Antilegionella: {status}");
+            }
+            else
+            {
+                var message = $"Error while updating Antilegionella {status}";
+
+                _logger.LogError(message);
+
+                throw new ApplicationException(message);
+            }
+        }
+
+        public async Task SetPreHeating(bool status)
+        {
+            var setPlantSettingsUrl = _baseUrl + url_PlantData + _plantId + "/plantSettings";
+
+            var setPlantSettingsContent = new StringContent(new SetPreHeatingBody(status).ToJson(), Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync(setPlantSettingsUrl, setPlantSettingsContent);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation($"Updated PreHeating: {status}");
+            }
+            else
+            {
+                var message = $"Error while updating PreHeating {status}";
+
+                _logger.LogError(message);
+
+                throw new ApplicationException(message);
+            }
+        }
+
+        public async Task SetMaxSetpointTemperature(double maxSetpointTemperature)
+        {
+            var setPlantSettingsUrl = _baseUrl + url_PlantData + _plantId + "/plantSettings";
+
+            var setPlantSettingsContent = new StringContent(new SetMaxSetpointTemperatyreBody(maxSetpointTemperature).ToJson(), Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync(setPlantSettingsUrl, setPlantSettingsContent);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation($"Updated MaxSetpointTemperature: {maxSetpointTemperature}");
+            }
+            else
+            {
+                var message = $"Error while updating MaxSetpointTemperature {maxSetpointTemperature}";
+
+                _logger.LogError(message);
+
+                throw new ApplicationException(message);
+            }
+        }
+
+
+        public async Task<ScheduleBody> GetSchedule()
+        {
+            await ensureLogin();
+
+            var scheduleUrl = _baseUrl + url_time + _plantId + "/Dhw";
+
+            var response = await httpClient.GetAsync(scheduleUrl);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseContentString = await response.Content.ReadAsStringAsync();
+
+                ScheduleBody getPlantSettringsResponse = ScheduleBody.FromJson(responseContentString);
+
+                return getPlantSettringsResponse;
+            }
+            else
+            {
+                _logger.LogError($"Error while retreiving Schedule. Http Status Code: {response.StatusCode}");
+                return null;
+            }
+        }
+
+
+        public async Task SetSchedule(ScheduleBody schedule)
+        {
+            var scheduleUrl = _baseUrl + url_time + _plantId + "/Dhw";
+
+            var setPlantSettingsContent = new StringContent(schedule.ToJson(), Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync(scheduleUrl, setPlantSettingsContent);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation($"Updated MaxSetpointTemperature: {schedule}");
+            }
+            else
+            {
+                var message = $"Error while updating MaxSetpointTemperature {schedule}";
+
+                _logger.LogError(message);
+
+                throw new ApplicationException(message);
             }
         }
 

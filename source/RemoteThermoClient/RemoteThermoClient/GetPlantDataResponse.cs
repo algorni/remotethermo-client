@@ -14,7 +14,7 @@ namespace RemoteThermoClient
         public double comfortTemp { get; set; }
         public double reducedTemp { get; set; }
         public double procReqTemp { get; set; }
-        public OperatingModeEnum opMode { get; set; }
+        public OperativeModeEnum opMode { get; set; }
         public DateTime holidayUntil { get; set; }
         public bool boostOn { get; set; }
         public hpStateEnum hpState { get; set; }
