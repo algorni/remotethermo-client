@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 
-namespace RemoteThermoSampleApp
+namespace SimpleRemoteThermo2MQTTApp
 {
     class Program
     {
@@ -50,11 +50,11 @@ namespace RemoteThermoSampleApp
                 return;
             }
 
-            string plantName = configuration.GetValue<string>("remoteThermoPlantName");
+            string plantId = configuration.GetValue<string>("remoteThermoPlantId");
 
-            if (string.IsNullOrEmpty(plantName))
+            if (string.IsNullOrEmpty(plantId))
             {
-                logger.LogError("This tool requires a <plantName> parameter to connect to the RemoteThermo services.");
+                logger.LogError("This tool requires a <plantId> parameter to connect to the RemoteThermo services.");
                 return;
             }
 
@@ -66,31 +66,53 @@ namespace RemoteThermoSampleApp
                 return;
             }
 
+            string mqttBrokerHost = configuration.GetValue<string>("mqttBrokerHost");
+
+            if (string.IsNullOrEmpty(mqttBrokerHost))
+            {
+                logger.LogError("This tool requires a <mqttBrokerHost> parameter to connect to the MQTT Broker.");
+                return;
+            }
+
+            string mqttBrokerPortStr = configuration.GetValue<string>("mqttBrokerPort");
+            int mqttBrokerPort = 1883; //default value
+
+            if (string.IsNullOrEmpty(mqttBrokerPortStr))
+            {
+                logger.LogError("This tool requires a <mqttBrokerPort> parameter to connect to the MQTT Broker.");
+                return;
+            }
+            else
+            {
+                var parsed = int.TryParse(mqttBrokerPortStr, out mqttBrokerPort);
+
+                if (!parsed)
+                {
+                    logger.LogError("This tool requires a valid integer as <mqttBrokerPort> parameter to connect to the MQTT Broker.");
+                    return;
+                }
+            }
+
+            string mqttBrokerBaseTopic = configuration.GetValue<string>("mqttBrokerBaseTopic");
+
+            if (string.IsNullOrEmpty(mqttBrokerBaseTopic))
+            {
+                logger.LogError("This tool requires a <mqttBrokerBaseTopic> parameter to connect to the MQTT Broker and listen + publish to the right topic.");
+                return;
+            }
+
+
+
 
             var remoteThermoClientLogger = loggerFactory.CreateLogger<RemoteThermoClient.RemoteThermoClient>();
 
-            remoteThermoClient = new RemoteThermoClient.RemoteThermoClient(userName, password, plantName, baseUrlComponent, remoteThermoClientLogger);
+
+            remoteThermoClient = new RemoteThermoClient.RemoteThermoClient(userName, password, plantId, baseUrlComponent, remoteThermoClientLogger);
 
 
-            var plants = await remoteThermoClient.GetPlants();
-
-            logger.LogInformation(plants.ToJson());
+            //now just start an infinite loop 
 
 
-
-            var plantData = await remoteThermoClient.GetPlantData();
-
-            logger.LogInformation(plantData.ToJson());
-
-
-
-            var plantSettings = await remoteThermoClient.GetPlantSettrings();
-
-            logger.LogInformation(plantSettings.ToJson());
-
-            var schedule = await remoteThermoClient.GetSchedule();
-
-            logger.LogInformation(schedule.ToJson());
 
         }
     }

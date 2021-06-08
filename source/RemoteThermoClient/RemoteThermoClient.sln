@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30907.101
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteThermoClient", "RemoteThermoClient\RemoteThermoClient.csproj", "{C8A0A684-2B78-4556-907E-F3E9C0927420}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RemoteThermoClient", "RemoteThermoClient\RemoteThermoClient.csproj", "{C8A0A684-2B78-4556-907E-F3E9C0927420}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteThermoSampleApp", "RemoteThermoSampleApp\RemoteThermoSampleApp.csproj", "{4C4AA6C3-C27A-4E53-AF70-9B2D0B4A5C25}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RemoteThermoSampleApp", "RemoteThermoSampleApp\RemoteThermoSampleApp.csproj", "{4C4AA6C3-C27A-4E53-AF70-9B2D0B4A5C25}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleRemoteThermo2MQTTApp", "SimpleRemoteThermo2MQTTApp\SimpleRemoteThermo2MQTTApp.csproj", "{3BD407A4-9A01-44E2-AF53-835A73D85810}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{4C4AA6C3-C27A-4E53-AF70-9B2D0B4A5C25}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4C4AA6C3-C27A-4E53-AF70-9B2D0B4A5C25}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4C4AA6C3-C27A-4E53-AF70-9B2D0B4A5C25}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BD407A4-9A01-44E2-AF53-835A73D85810}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BD407A4-9A01-44E2-AF53-835A73D85810}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BD407A4-9A01-44E2-AF53-835A73D85810}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BD407A4-9A01-44E2-AF53-835A73D85810}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -5,29 +5,33 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace RemoteThermoClient
 {
     public class RemoteThermoClient
-    {
-        
+    {   
         private static HttpClient httpClient = new HttpClient();
 
         private ILogger _logger;
-
 
 
         //the overall url for the API will be something like https://www.<baseUrlComponent>.remotethermo.com/api/v2/<api-specific>
         private string _baseUrl = null;
         private string _userName;
         private string _password;
+        private string _plantName;
         private string _plantId;
-
+        
         private LoginResponse _loginResponse = null;
 
-        
+        private GetPlantsResponse _plantResponse = null;
+
 
         private const string url_Login = "/api/v2/accounts/login";
+
+        private const string url_Plants = "/api/v2/velis/plants";
+
         private const string url_PlantData = "/api/v2/velis/slpPlantData/";
 
         private const string url_time = "/api/v2/remote/timeProgs/";
@@ -44,11 +48,11 @@ namespace RemoteThermoClient
         /// <param name="plantId"></param>
         /// <param name="baseUrlComponent"></param>
         /// <param name="logger"></param>
-        public RemoteThermoClient(string userName, string password, string plantId, string baseUrlComponent, ILogger<RemoteThermoClient> logger)
+        public RemoteThermoClient(string userName, string password, string plantName, string baseUrlComponent, ILogger<RemoteThermoClient> logger)
         {
             _userName = userName;
             _password = password;
-            _plantId = plantId;
+            _plantName = plantName;
 
             _baseUrl = $"https://www.{baseUrlComponent}.remotethermo.com";
 
@@ -79,7 +83,7 @@ namespace RemoteThermoClient
             }            
         }
 
-        private async Task ensureLogin()
+        private async Task ensureLoginAndGetPlantId(bool justLogin = false)
         {
             if (_loginResponse == null)
             {
@@ -92,13 +96,54 @@ namespace RemoteThermoClient
                 else
                 {
                     throw new ApplicationException($"Login error!");
-                }                
+                }                           
+            }
+
+            if (!justLogin)
+            {
+                _plantResponse = await GetPlants(true);
+
+                _plantId = (from plant in _plantResponse.Plants
+                            where plant.name == _plantName
+                            select plant.gw).FirstOrDefault();
+
+                if (string.IsNullOrEmpty(_plantId))
+                {
+                    throw new ApplicationException($"Impossible to find Plant By Name: {_plantName}");
+                }
             }
         }
 
+        public async Task<GetPlantsResponse> GetPlants(bool reload = false)
+        {
+            if (_plantResponse != null && !reload)
+                return _plantResponse;
+
+            await ensureLoginAndGetPlantId(true);
+
+            var getPlantsUrl = _baseUrl + url_Plants;
+
+            var response = await httpClient.GetAsync(getPlantsUrl);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseContentString = await response.Content.ReadAsStringAsync();
+
+                GetPlantsResponse getPlantsResponse = GetPlantsResponse.FromJson(responseContentString);
+
+                return getPlantsResponse;
+            }
+            else
+            {
+                _logger.LogError($"Error while retreiving Plants. Http Status Code: {response.StatusCode}");
+                return null;
+            }
+        }
+
+
         public async Task<GetPlantDataResponse> GetPlantData()
         {
-            await ensureLogin();
+            await ensureLoginAndGetPlantId();
                        
             var getPlantDataUrl = _baseUrl + url_PlantData + _plantId;
 
@@ -122,7 +167,7 @@ namespace RemoteThermoClient
 
         public async Task<GetPlantSettringsResponse> GetPlantSettrings()
         {
-            await ensureLogin();
+            await ensureLoginAndGetPlantId();
 
             var getPlantDataUrl = _baseUrl + url_PlantData + _plantId + "/plantSettings";
 
@@ -146,7 +191,7 @@ namespace RemoteThermoClient
 
         public async Task SwitchOnOff(bool status)
         {
-            await ensureLogin();
+            await ensureLoginAndGetPlantId();
 
             var postSwitchStatus = _baseUrl + url_PlantData + _plantId + "/switch";
 
@@ -171,7 +216,7 @@ namespace RemoteThermoClient
 
         public async Task UpdatePlantMode(PlantModeEnum plantMode)
         {
-            await ensureLogin();
+            await ensureLoginAndGetPlantId();
 
             var postUpdatePlantMode = _baseUrl + url_PlantData + _plantId + "/plantMode";
 
@@ -198,7 +243,7 @@ namespace RemoteThermoClient
 
         public async Task UpdateOperativeMode(OperativeModeEnum operativeMode)
         {
-            await ensureLogin();
+            await ensureLoginAndGetPlantId();
 
             var postUpdateOperativeMode = _baseUrl + url_PlantData + _plantId + "/operativeMode";
 
@@ -225,7 +270,7 @@ namespace RemoteThermoClient
 
         public async Task SetBoostOnOff(bool status)
         {
-            await ensureLogin();
+            await ensureLoginAndGetPlantId();
 
             var postSwitchStatus = _baseUrl + url_PlantData + _plantId + "/boost";
 
@@ -363,7 +408,7 @@ namespace RemoteThermoClient
 
         public async Task<ScheduleBody> GetSchedule()
         {
-            await ensureLogin();
+            await ensureLoginAndGetPlantId();
 
             var scheduleUrl = _baseUrl + url_time + _plantId + "/Dhw";
 
